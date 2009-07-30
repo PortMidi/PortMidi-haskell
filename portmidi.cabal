@@ -1,6 +1,7 @@
 name:		PortMidi
 version:	0.1
 Cabal-Version: >= 1.2
+build-type:     Simple
 license:	BSD3
 license-file:	LICENSE
 maintainer:	Paul H. Liu <paul@thev.net>
@@ -47,6 +48,7 @@ Library
           portmidi/porttime/porttime.c
           portmidi/porttime/ptmacosx_mach.c
      frameworks: CoreMIDI CoreFoundation CoreAudio
+     cc-options: -march=apple
     else
       if os(mingw32)
         include-dirs: portmidi/pm_common portmidi/pm_win portmidi/porttime
