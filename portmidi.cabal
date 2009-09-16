@@ -9,7 +9,6 @@ homepage:	http://haskell.org/haskellwiki/PortMidi
 category:	Sound
 stability:      experimental
 synopsis:	A binding for PortMedia/PortMidi
-build-type:     Simple
 description:
  A Haskell binding for PortMedia/PortMidi
 extra-source-files:
@@ -50,7 +49,6 @@ Library
           portmidi/porttime/porttime.c
           portmidi/porttime/ptmacosx_mach.c
      frameworks: CoreMIDI CoreFoundation CoreAudio
-     cc-options: -march=apple
     else
       if os(mingw32)
         include-dirs: portmidi/pm_common portmidi/pm_win portmidi/porttime
