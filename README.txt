@@ -5,6 +5,14 @@ real-time MIDI input and output.
 ChangLog
 ========
 
+- Wed Sep 9 EST 2009
+
+  Fix the compilation problem with GHC 6.10.2+ on OS X.
+
+- Mon Sep 7 EST 2009
+
+  Package up for Hackage DB.
+
 - Thu Sep 4 EST 2008
 
   Initial 0.1 release, very experimental, and lack proper documentation.
@@ -42,7 +50,7 @@ You may send your bug report and feature request to the package
 maintainer: Paul H. Liu <paul@thev.net>.
 
 --
-Last Update: Tue Sep 4 EST 2008
+Last Update: Tue Sep 7 EST 2009
  
 
 

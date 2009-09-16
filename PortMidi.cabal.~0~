@@ -1,5 +1,5 @@
 name:		PortMidi
-version:	0.1.2
+version:	0.1
 Cabal-Version: >= 1.2
 build-type:     Simple
 license:	BSD3
@@ -9,7 +9,6 @@ homepage:	http://haskell.org/haskellwiki/PortMidi
 category:	Sound
 stability:      experimental
 synopsis:	A binding for PortMedia/PortMidi
-build-type:     Simple
 description:
  A Haskell binding for PortMedia/PortMidi
 extra-source-files:
@@ -25,7 +24,7 @@ extra-source-files:
         portmidi/porttime/porttime.h
 Library
   exposed-modules: 	Sound.PortMidi
-  build-depends:	base >= 3 && < 5
+  build-depends:	base
   extensions:	CPP, ForeignFunctionInterface
   if os(linux)
     include-dirs: portmidi/pm_common portmidi/pm_linux portmidi/porttime
@@ -40,8 +39,7 @@ Library
    extra-libraries: asound
   else
     if os(darwin)
-     include-dirs: portmidi/pm_common portmidi/pm_mac portmidi/porttime
-     cc-options:   -msse2
+      include-dirs: portmidi/pm_common portmidi/pm_mac portmidi/porttime
      c-sources:  
           portmidi/pm_common/pmutil.c
           portmidi/pm_common/portmidi.c
