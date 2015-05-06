@@ -293,7 +293,7 @@ writeShort stream (PMEvent msg time) = withForeignPtr stream (\s ->
 foreign import ccall "portmidi.h Pm_WriteSysEx" pm_WriteSysEx :: PMStreamPtr -> CULong -> CString -> IO Int
 writeSysEx :: PMStream -> Timestamp -> String -> IO PMError
 writeSysEx stream time str = withForeignPtr stream (\st ->
-  withCString str (\s -> pm_WriteSysEx st time s >>= return . toEnum))
+  withCAString str (\s -> pm_WriteSysEx st time s >>= return . toEnum))
 
 foreign import ccall "porttime.h Pt_Time" time :: IO Timestamp      
 
