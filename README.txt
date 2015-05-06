@@ -5,6 +5,13 @@ real-time MIDI input and output.
 ChangLog
 ========
 
+
+- Wed Sep 16 EST 2009
+
+  remove conflicts in cabal file.
+
+  fix compilation problem on OS X.
+
 - Wed Sep 9 EST 2009
 
   Fix the compilation problem with GHC 6.10.2+ on OS X.
@@ -50,7 +57,7 @@ You may send your bug report and feature request to the package
 maintainer: Paul H. Liu <paul@thev.net>.
 
 --
-Last Update: Tue Sep 7 EST 2009
+Last Update: Wed May 6 PDT 2015
  
 
 

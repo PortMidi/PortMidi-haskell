@@ -1,6 +1,6 @@
 name:		PortMidi
-version:	0.1.2
-Cabal-Version: >= 1.2
+version:	0.1.4
+Cabal-Version: >= 1.6
 build-type:     Simple
 license:	BSD3
 license-file:	LICENSE
@@ -60,4 +60,7 @@ Library
           portmidi/porttime/porttime.c
           portmidi/porttime/ptwinmm.c
         extra-libraries: winmm 
+source-repository head
+  type:         darcs
+  location:     http://code.haskell.org/PortMidi
 
