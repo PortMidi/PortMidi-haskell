@@ -70,6 +70,8 @@ import Data.IORef
 import Data.Bits
 import System.IO.Unsafe
 
+import Sound.PortMidi.DeviceInfo
+
 data PMError
   = NoError
   | GotData
@@ -107,36 +109,14 @@ instance Enum PMError where
   toEnum (-9994) = BadData
   toEnum (-9993) = InternalError
   toEnum (-9992) = BufferMaxSize
-  toEnum _ = error "PortMidi: toEnum out of bound"
+  toEnum x = error $ "PortMidi: toEnum out of bound " ++ show x
+
+toPMError :: CInt -> PMError
+toPMError = toEnum . fromIntegral
 
 data PortMidiStream
 type PMStreamPtr = Ptr PortMidiStream
 type PMStream = ForeignPtr PortMidiStream
-
-data DeviceInfo 
-  =  DeviceInfo
-  { interface :: String
-  , name      :: String
-  , input     :: Bool
-  , output    :: Bool
-  , opened    :: Bool
-  } deriving (Eq, Show)
-
-peekDeviceInfo ptr = do
-  let p0 = sizeOf (0 :: Int)
-  f <- peekByteOff ptr p0
-  s <- peekCString f
-  let p1 = p0 + sizeOf f
-  n <- peekByteOff ptr p1
-  u <- peekCString n
-  let p2 = p1 + sizeOf n 
-  i <- peekByteOff ptr p2
-  let p3 = p2 + sizeOf i
-  o <- peekByteOff ptr p3
-  let p4 = p3 + sizeOf o
-  d <- peekByteOff ptr p4
-  return $ DeviceInfo s u i o d
-
 type DeviceID = Int
 
 (.<.) = shiftL
@@ -197,103 +177,108 @@ instance Storable PMEvent where
     pokeByteOff ptr (sizeOf v) t
 
 
-foreign import ccall "portmidi.h Pm_Initialize" pm_Initialize :: IO Int
+foreign import ccall "portmidi.h Pm_Initialize" pm_Initialize :: IO CInt
 initialize :: IO PMError
-initialize = pm_Initialize >>= return . toEnum
+initialize = pm_Initialize >>= return . toPMError
 
-foreign import ccall "portmidi.h Pm_Terminate" pm_Terminate :: IO Int
+foreign import ccall "portmidi.h Pm_Terminate" pm_Terminate :: IO CInt
 terminate :: IO PMError
-terminate = pm_Terminate >>= return . toEnum
+terminate = pm_Terminate >>= return . toPMError
 
-foreign import ccall "portmidi.h Pm_HasHostError" pm_HasHostError :: PMStreamPtr -> IO Int
+foreign import ccall "portmidi.h Pm_HasHostError" pm_HasHostError :: PMStreamPtr -> IO CInt
 hasHostError :: PMStream -> IO Bool
-hasHostError = flip withForeignPtr (\stream -> pm_HasHostError stream >>= return . toEnum)
+hasHostError = flip withForeignPtr (\stream -> pm_HasHostError stream >>= return . toEnum . fromIntegral)
 
-foreign import ccall "portmidi.h Pm_GetErrorText" pm_GetErrorText :: Int -> IO CString
+foreign import ccall "portmidi.h Pm_GetErrorText" pm_GetErrorText :: CInt -> IO CString
 getErrorText :: PMError -> IO String
-getErrorText err = pm_GetErrorText (fromEnum err) >>= peekCString
+getErrorText err = pm_GetErrorText (fromIntegral $ fromEnum err) >>= peekCString
 
-foreign import ccall "portmidi.h Pm_CountDevices" countDevices :: IO DeviceID
-foreign import ccall "portmidi.h Pm_GetDefaultInputDeviceID" pm_GetDefaultInputDeviceID :: IO DeviceID 
+foreign import ccall "portmidi.h Pm_CountDevices" pm_countDevices :: IO CInt
+countDevices :: IO DeviceID
+countDevices = pm_countDevices >>= return . fromIntegral
+
+foreign import ccall "portmidi.h Pm_GetDefaultInputDeviceID" pm_GetDefaultInputDeviceID :: IO CInt
+getDefaultInputDeviceID :: IO (Maybe DeviceID)
 getDefaultInputDeviceID = do
   i <- pm_GetDefaultInputDeviceID
-  return $ if i == -1 then Nothing else Just i
-foreign import ccall "portmidi.h Pm_GetDefaultOutputDeviceID" pm_GetDefaultOutputDeviceID :: IO DeviceID 
+  return $ if i == -1 then Nothing else Just (fromIntegral i)
+foreign import ccall "portmidi.h Pm_GetDefaultOutputDeviceID" pm_GetDefaultOutputDeviceID :: IO CInt
+getDefaultOutputDeviceID :: IO (Maybe DeviceID)
 getDefaultOutputDeviceID = do
   i <- pm_GetDefaultOutputDeviceID
-  return $ if i == -1 then Nothing else Just i
+  return $ if i == -1 then Nothing else Just (fromIntegral i)
 
-foreign import ccall "portmidi.h Pm_GetDeviceInfo" pm_GetDeviceInfo :: DeviceID -> IO (Ptr ()) 
+foreign import ccall "portmidi.h Pm_GetDeviceInfo" pm_GetDeviceInfo :: CInt -> IO (Ptr ())
 getDeviceInfo :: DeviceID -> IO DeviceInfo
-getDeviceInfo deviceID = pm_GetDeviceInfo deviceID >>= peekDeviceInfo
+getDeviceInfo deviceID = pm_GetDeviceInfo (fromIntegral deviceID) >>= peekDeviceInfo
 
-foreign import ccall "portmidi.h Pm_OpenInput" pm_OpenInput :: Ptr PMStreamPtr -> DeviceID -> Ptr () -> CLong -> Ptr () -> Ptr () -> IO Int
+foreign import ccall "portmidi.h Pm_OpenInput" pm_OpenInput :: Ptr PMStreamPtr -> CInt -> Ptr () -> CLong -> Ptr () -> Ptr () -> IO CInt
 openInput :: DeviceID -> IO (Either PMStream PMError)
 openInput inputDevice = 
   with nullPtr (\ptr -> do
-    e <- pm_OpenInput ptr inputDevice nullPtr 0 nullPtr nullPtr
+    e <- pm_OpenInput ptr (fromIntegral inputDevice) nullPtr 0 nullPtr nullPtr
     if e == 0 
       then do
         stream <- peek ptr
         ptr' <- newForeignPtr_ stream
         return $ Left ptr'
-      else return (Right (toEnum e)))
+      else return (Right (toPMError e)))
       
-foreign import ccall "portmidi.h Pm_OpenOutput" pm_OpenOutput :: Ptr PMStreamPtr -> DeviceID -> Ptr () -> CLong -> Ptr () -> Ptr () -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_OpenOutput" pm_OpenOutput :: Ptr PMStreamPtr -> CInt -> Ptr () -> CLong -> Ptr () -> Ptr () -> CLong -> IO CInt
 openOutput :: DeviceID -> Int -> IO (Either PMStream PMError)
 openOutput outputDevice latency =
   with nullPtr (\ptr -> do
-    e <- pm_OpenOutput ptr outputDevice nullPtr 0 nullPtr nullPtr (fromIntegral latency)
+    e <- pm_OpenOutput ptr (fromIntegral outputDevice) nullPtr 0 nullPtr nullPtr (fromIntegral latency)
     if e == 0 
       then do
         stream <- peek ptr
         ptr' <- newForeignPtr_ stream
         return $ Left ptr'
-      else return (Right (toEnum e)))
+      else return (Right (toPMError e)))
 
-foreign import ccall "portmidi.h Pm_SetFilter" pm_SetFilter :: PMStreamPtr -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_SetFilter" pm_SetFilter :: PMStreamPtr -> CLong -> IO CInt
 setFilter :: PMStream -> CLong -> IO PMError
-setFilter stream filter = withForeignPtr stream (\s -> pm_SetFilter s filter >>= return . toEnum)
+setFilter stream filter = withForeignPtr stream (\s -> pm_SetFilter s filter >>= return . toPMError)
 
 channel :: Int -> CLong
 channel i = 1 .<. i
 
-foreign import ccall "portmidi.h Pm_SetChannelMask" pm_SetChannelMask :: PMStreamPtr -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_SetChannelMask" pm_SetChannelMask :: PMStreamPtr -> CLong -> IO CInt
 setChannelMask :: PMStream -> CLong -> IO PMError
-setChannelMask stream mask = withForeignPtr stream (\s -> pm_SetChannelMask s mask >>= return . toEnum)
+setChannelMask stream mask = withForeignPtr stream (\s -> pm_SetChannelMask s mask >>= return . toPMError)
 
-foreign import ccall "portmidi.h Pm_Abort" pm_Abort :: PMStreamPtr -> IO Int
+foreign import ccall "portmidi.h Pm_Abort" pm_Abort :: PMStreamPtr -> IO CInt
 abort :: PMStream -> IO PMError
-abort = flip withForeignPtr (\s -> pm_Abort s >>= return . toEnum)
+abort = flip withForeignPtr (\s -> pm_Abort s >>= return . toPMError)
 
-foreign import ccall "portmidi.h Pm_Close" pm_Close :: PMStreamPtr -> IO Int
+foreign import ccall "portmidi.h Pm_Close" pm_Close :: PMStreamPtr -> IO CInt
 close :: PMStream -> IO PMError
-close = flip withForeignPtr (\s -> pm_Close s >>= return . toEnum)
+close = flip withForeignPtr (\s -> pm_Close s >>= return . toPMError)
 
-foreign import ccall "portmidi.h Pm_Read" pm_Read :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_Read" pm_Read :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO CInt
 readEvents :: PMStream -> IO (Either [PMEvent] PMError)
 readEvents = flip withForeignPtr (\s -> allocaArray (fromIntegral defaultBufferSize) (\arr -> do
   r <- pm_Read s arr defaultBufferSize
   if r > 0
-    then peekArray r arr >>= return . Left
-    else return $ Right (toEnum r)))
+    then peekArray (fromIntegral r) arr >>= return . Left
+    else return $ Right (toPMError r)))
   where
     defaultBufferSize = 256
 
-foreign import ccall "portmidi.h Pm_Write" pm_Write :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_Write" pm_Write :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO CInt
 writeEvents :: PMStream -> [PMEvent] -> IO PMError
 writeEvents stream events = withForeignPtr stream (\s -> 
-  withArrayLen events (\len arr -> pm_Write s arr (fromIntegral len) >>= return . toEnum))
+  withArrayLen events (\len arr -> pm_Write s arr (fromIntegral len) >>= return . toPMError))
 
-foreign import ccall "portmidi.h Pm_WriteShort" pm_WriteShort :: PMStreamPtr -> CULong -> CLong -> IO Int
+foreign import ccall "portmidi.h Pm_WriteShort" pm_WriteShort :: PMStreamPtr -> CULong -> CLong -> IO CInt
 writeShort :: PMStream -> PMEvent -> IO PMError
 writeShort stream (PMEvent msg time) = withForeignPtr stream (\s ->
-  pm_WriteShort s time (encodeMsg msg) >>= return . toEnum)
+  pm_WriteShort s time (encodeMsg msg) >>= return . toPMError)
 
-foreign import ccall "portmidi.h Pm_WriteSysEx" pm_WriteSysEx :: PMStreamPtr -> CULong -> CString -> IO Int
+foreign import ccall "portmidi.h Pm_WriteSysEx" pm_WriteSysEx :: PMStreamPtr -> CULong -> CString -> IO CInt
 writeSysEx :: PMStream -> Timestamp -> String -> IO PMError
 writeSysEx stream time str = withForeignPtr stream (\st ->
-  withCAString str (\s -> pm_WriteSysEx st time s >>= return . toEnum))
+  withCAString str (\s -> pm_WriteSysEx st time s >>= return . toPMError))
 
 foreign import ccall "porttime.h Pt_Time" time :: IO Timestamp      
 
