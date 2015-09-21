@@ -168,9 +168,9 @@ filterSystemCommon = filterMTC .|. filterSongPosition .|. filterSongSelect .|. f
 
 data PMMsg 
   =  PMMsg
-  { status :: CLong
-  , data1  :: CLong
-  , data2  :: CLong 
+  { status :: !CLong
+  , data1  :: !CLong
+  , data2  :: !CLong
   } deriving (Eq, Show)
 
 encodeMsg (PMMsg s d1 d2) = ((d2 .&. 0xFF) .<. 16) .|. ((d1 .&. 0xFF) .<. 8) .|. (s .&. 0xFF)
@@ -180,8 +180,8 @@ type Timestamp = CULong
 
 data PMEvent 
   =  PMEvent 
-  { message   :: PMMsg
-  , timestamp :: Timestamp
+  { message   :: !PMMsg
+  , timestamp :: !Timestamp
   } deriving (Eq, Show)
 
 instance Storable PMEvent where
