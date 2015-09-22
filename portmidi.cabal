@@ -1,5 +1,5 @@
 name:          PortMidi
-version:       0.1.5.1
+version:       0.1.5.2
 Cabal-Version: >= 1.6
 build-type:    Simple
 license:       BSD3
@@ -12,6 +12,7 @@ synopsis:      A binding for PortMedia/PortMidi
 description:   A Haskell binding for PortMedia/PortMidi
 extra-source-files:
         README.txt
+        CHANGELOG.txt
         portmidi/pm_common/portmidi.h
         portmidi/pm_common/pmutil.h
         portmidi/pm_common/pminternal.h
