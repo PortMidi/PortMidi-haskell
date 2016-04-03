@@ -1,8 +1,7 @@
 {- |
     Interface to PortMidi
 -}
-
-{-# OPTIONS_GHC -fglasgow-exts #-}
+{-# LANGUAGE EmptyDataDecls #-}
 
 module Sound.PortMidi ( 
   -- * Data Types
