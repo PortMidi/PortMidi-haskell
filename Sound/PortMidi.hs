@@ -152,14 +152,16 @@ data PMMsg
   , data2  :: !CLong
   } deriving (Eq, Show)
 
+encodeMsg :: PMMsg -> CLong
 encodeMsg (PMMsg s d1 d2) = ((d2 .&. 0xFF) .<. 16) .|. ((d1 .&. 0xFF) .<. 8) .|. (s .&. 0xFF)
+decodeMsg :: CLong -> PMMsg
 decodeMsg i = PMMsg (i .&. 0xFF) ((i .>. 8) .&. 0xFF) ((i .>. 16) .&. 0xFF)
 
 type Timestamp = CULong
 
 data PMEvent 
   =  PMEvent 
-  { message   :: !PMMsg
+  { message   :: !CLong
   , timestamp :: !Timestamp
   } deriving (Eq, Show)
 
@@ -169,11 +171,10 @@ instance Storable PMEvent where
   peek ptr = do
     m <- peekByteOff ptr 0
     t <- peekByteOff ptr (sizeOf m)
-    return $ PMEvent (decodeMsg m) t
+    return $ PMEvent m t
   poke ptr (PMEvent m t) = do
-    let v = encodeMsg m :: CLong
-    pokeByteOff ptr 0 v 
-    pokeByteOff ptr (sizeOf v) t
+    pokeByteOff ptr 0 m
+    pokeByteOff ptr (sizeOf m) t
 
 
 foreign import ccall "portmidi.h Pm_Initialize" pm_Initialize :: IO CInt
@@ -272,7 +273,7 @@ writeEvents stream events = withForeignPtr stream (\s ->
 foreign import ccall "portmidi.h Pm_WriteShort" pm_WriteShort :: PMStreamPtr -> CULong -> CLong -> IO CInt
 writeShort :: PMStream -> PMEvent -> IO PMError
 writeShort stream (PMEvent msg time) = withForeignPtr stream (\s ->
-  pm_WriteShort s time (encodeMsg msg) >>= return . toPMError)
+  pm_WriteShort s time msg >>= return . toPMError)
 
 foreign import ccall "portmidi.h Pm_WriteSysEx" pm_WriteSysEx :: PMStreamPtr -> CULong -> CString -> IO CInt
 writeSysEx :: PMStream -> Timestamp -> String -> IO PMError
