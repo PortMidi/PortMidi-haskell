@@ -27,7 +27,7 @@ Library
   other-modules:   Sound.PortMidi.DeviceInfo
   build-depends:   base >= 3 && < 5
   extensions:      CPP, ForeignFunctionInterface
-  if os(linux)
+  if os(linux) || os(freebsd)
     include-dirs: portmidi/pm_common portmidi/pm_linux portmidi/porttime
     cc-options: -DPMALSA 
     c-sources:    
