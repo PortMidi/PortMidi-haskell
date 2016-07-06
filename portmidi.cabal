@@ -1,11 +1,11 @@
 name:          PortMidi
-version:       0.1.5.2
+version:       0.1.5.3
 Cabal-Version: >= 1.6
 build-type:    Simple
 license:       BSD3
 license-file:  LICENSE
 maintainer:    Paul H. Liu <paul@thev.net>
-homepage:      http://haskell.org/haskellwiki/PortMidi
+homepage:      http://github.com/ninegua/PortMidi
 category:      Sound
 stability:     experimental
 synopsis:      A binding for PortMedia/PortMidi
@@ -62,6 +62,6 @@ Library
           portmidi/porttime/ptwinmm.c
         extra-libraries: winmm 
 source-repository head
-  type:         darcs
-  location:     http://code.haskell.org/PortMidi
+  type:         git
+  location:     https://github.com/ninegua/PortMidi
 
