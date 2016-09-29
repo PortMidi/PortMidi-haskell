@@ -31,4 +31,4 @@ You may send your bug report and feature request to the package
 maintainer: Paul H. Liu <paul@thev.net>.
 
 --
-Last Update: Tue Jul 5 PDT 2016
+Last Update: Wed Sep 28 PDT 2016
