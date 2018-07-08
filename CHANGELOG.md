@@ -16,8 +16,7 @@ The format of this changelog is based on
     namely 'NoError' and 'GotData', were moved to a new type 'PMSuccess'.
 
 ### Added
-- The `poll` function was added (it binds to `Pm_Poll`) : it allows to know,
-  without reading the events, if some events are present.
+- The `poll` function was added, it binds to `Pm_Poll`.
 
 
 ## 0.1.6.1
