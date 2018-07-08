@@ -1,10 +1,11 @@
 name:          PortMidi
-version:       0.1.6.1
+version:       0.2.0.0
 Cabal-Version: >= 1.6
 build-type:    Simple
 license:       BSD3
 license-file:  LICENSE
 maintainer:    Paul H. Liu <paul@thev.net>
+             , Olivier Sohn <olivier.sohn@gmail.com>
 homepage:      http://github.com/ninegua/PortMidi
 category:      Sound
 stability:     experimental
@@ -12,7 +13,7 @@ synopsis:      A binding for PortMedia/PortMidi
 description:   A Haskell binding for PortMedia/PortMidi
 extra-source-files:
         README.txt
-        CHANGELOG.txt
+        CHANGELOG.md
         portmidi/pm_common/portmidi.h
         portmidi/pm_common/pmutil.h
         portmidi/pm_common/pminternal.h
@@ -29,8 +30,8 @@ Library
   extensions:      CPP, ForeignFunctionInterface
   if os(linux) || os(freebsd)
     include-dirs: portmidi/pm_common portmidi/pm_linux portmidi/porttime
-    cc-options: -DPMALSA 
-    c-sources:    
+    cc-options: -DPMALSA
+    c-sources:
           portmidi/pm_common/pmutil.c
           portmidi/pm_common/portmidi.c
           portmidi/pm_linux/pmlinux.c
@@ -42,7 +43,7 @@ Library
     if os(darwin)
      include-dirs: portmidi/pm_common portmidi/pm_mac portmidi/porttime
      cc-options:   -msse2
-     c-sources:  
+     c-sources:
           portmidi/pm_common/pmutil.c
           portmidi/pm_common/portmidi.c
           portmidi/pm_mac/pmmac.c
@@ -53,15 +54,14 @@ Library
     else
       if os(mingw32)
         include-dirs: portmidi/pm_common portmidi/pm_win portmidi/porttime
-        c-sources:  
+        c-sources:
           portmidi/pm_common/pmutil.c
           portmidi/pm_common/portmidi.c
           portmidi/pm_win/pmwin.c
           portmidi/pm_win/pmwinmm.c
           portmidi/porttime/porttime.c
           portmidi/porttime/ptwinmm.c
-        extra-libraries: winmm 
+        extra-libraries: winmm
 source-repository head
   type:         git
   location:     https://github.com/ninegua/PortMidi
-

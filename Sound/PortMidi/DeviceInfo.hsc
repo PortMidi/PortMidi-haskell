@@ -19,6 +19,7 @@ data DeviceInfo
   , opened    :: Bool
   } deriving (Eq, Show)
 
+peekDeviceInfo :: Ptr a -> IO DeviceInfo
 peekDeviceInfo ptr = do
   s <- #{peek PmDeviceInfo, interf} ptr >>= peekCString
   u <- #{peek PmDeviceInfo, name} ptr >>= peekCString
