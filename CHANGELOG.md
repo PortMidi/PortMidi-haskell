@@ -16,7 +16,12 @@ The format of this changelog is based on
     namely 'NoError' and 'GotData', were moved to a new type 'PMSuccess'.
 
 ### Added
-- The `poll` function was added, it binds to `Pm_Poll`.
+- The `poll` function which binds to `Pm_Poll`.
+- The `readEventsToBuffer` function, to read events in a user-supplied buffer.
+    This function returns a `PMEventCount`, representing the count of `PMEvent`s
+    that was read.
+- The `PMSuccess` type representing non-errors, with its the associated
+    functions `getText` and `getSuccessText`.
 
 
 ## 0.1.6.1

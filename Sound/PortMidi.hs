@@ -2,11 +2,13 @@
     Interface to PortMidi
 -}
 {-# LANGUAGE EmptyDataDecls #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Sound.PortMidi (
   -- * Data Types
     PMError(..)
   , PMSuccess(..)
+  , PMEventCount(..)
   , PMStream
   , DeviceInfo(..)
   , DeviceID
@@ -39,6 +41,8 @@ module Sound.PortMidi (
   , terminate
   , hasHostError
   , getErrorText
+  , getSuccessText
+  , getText
   , countDevices
   , getDefaultInputDeviceID
   , getDefaultOutputDeviceID
@@ -52,6 +56,7 @@ module Sound.PortMidi (
   , close
   , poll
   , readEvents
+  , readEventsToBuffer
   , writeEvents
   , writeShort
   , writeSysEx
@@ -115,12 +120,22 @@ instance Enum PMError where
   toEnum (-9992) = BufferMaxSize
   toEnum x = error $ "PortMidi: PMError toEnum out of bound " ++ show x
 
-toPMError :: CInt -> Either PMError PMSuccess
-toPMError n
+eitherErrorOrSuccess :: CInt -> Either PMError PMSuccess
+eitherErrorOrSuccess n
   | isSuccess = Right $ toEnum $ fromIntegral n
   | otherwise = Left $ toEnum $ fromIntegral n
   where
     isSuccess = n == 0 || n == 1
+
+-- | Represents a count of 'PMEvent's
+newtype PMEventCount = PMEventCount CInt
+  deriving(Num, Integral, Real, Enum, Show, Eq, Ord)
+
+-- | Interprets a 'CInt', as returned by 'pm_Read'.
+eitherErrorOrCount :: CInt -> Either PMError PMEventCount
+eitherErrorOrCount n
+  | n >= 0    = Right $ fromIntegral n
+  | otherwise = Left $ toEnum $ fromIntegral n
 
 data PortMidiStream
 type PMStreamPtr = Ptr PortMidiStream
@@ -191,11 +206,11 @@ instance Storable PMEvent where
 
 foreign import ccall "portmidi.h Pm_Initialize" pm_Initialize :: IO CInt
 initialize :: IO (Either PMError PMSuccess)
-initialize = pm_Initialize >>= return . toPMError
+initialize = pm_Initialize >>= return . eitherErrorOrSuccess
 
 foreign import ccall "portmidi.h Pm_Terminate" pm_Terminate :: IO CInt
 terminate :: IO (Either PMError PMSuccess)
-terminate = pm_Terminate >>= return . toPMError
+terminate = pm_Terminate >>= return . eitherErrorOrSuccess
 
 foreign import ccall "portmidi.h Pm_HasHostError" pm_HasHostError :: PMStreamPtr -> IO CInt
 hasHostError :: PMStream -> IO Bool
@@ -204,6 +219,12 @@ hasHostError = flip withForeignPtr (\stream -> pm_HasHostError stream >>= return
 foreign import ccall "portmidi.h Pm_GetErrorText" pm_GetErrorText :: CInt -> IO CString
 getErrorText :: PMError -> IO String
 getErrorText err = pm_GetErrorText (fromIntegral $ fromEnum err) >>= peekCString
+
+getSuccessText :: PMSuccess -> IO String
+getSuccessText success = pm_GetErrorText (fromIntegral $ fromEnum success) >>= peekCString
+
+getText :: Either PMError PMSuccess -> IO String
+getText = either getErrorText getSuccessText
 
 foreign import ccall "portmidi.h Pm_CountDevices" pm_countDevices :: IO CInt
 countDevices :: IO DeviceID
@@ -228,7 +249,7 @@ foreign import ccall "portmidi.h Pm_OpenInput" pm_OpenInput :: Ptr PMStreamPtr -
 openInput :: DeviceID -> IO (Either PMError PMStream)
 openInput inputDevice =
   with nullPtr (\ptr ->
-    toPMError <$> pm_OpenInput ptr (fromIntegral inputDevice) nullPtr 0 nullPtr nullPtr >>= either
+    eitherErrorOrSuccess <$> pm_OpenInput ptr (fromIntegral inputDevice) nullPtr 0 nullPtr nullPtr >>= either
       (return . Left)
       (\_ -> do
         stream <- peek ptr
@@ -238,7 +259,7 @@ foreign import ccall "portmidi.h Pm_OpenOutput" pm_OpenOutput :: Ptr PMStreamPtr
 openOutput :: DeviceID -> Int -> IO (Either PMError PMStream)
 openOutput outputDevice latency =
   with nullPtr (\ptr -> do
-    toPMError <$> pm_OpenOutput ptr (fromIntegral outputDevice) nullPtr 0 nullPtr nullPtr (fromIntegral latency) >>= either
+    eitherErrorOrSuccess <$> pm_OpenOutput ptr (fromIntegral outputDevice) nullPtr 0 nullPtr nullPtr (fromIntegral latency) >>= either
       (return . Left)
       (\_ -> do
         stream <- peek ptr
@@ -246,47 +267,68 @@ openOutput outputDevice latency =
 
 foreign import ccall "portmidi.h Pm_SetFilter" pm_SetFilter :: PMStreamPtr -> CLong -> IO CInt
 setFilter :: PMStream -> CLong -> IO (Either PMError PMSuccess)
-setFilter stream theFilter = withForeignPtr stream (fmap toPMError . flip pm_SetFilter theFilter)
+setFilter stream theFilter = withForeignPtr stream (fmap eitherErrorOrSuccess . flip pm_SetFilter theFilter)
 
 channel :: Int -> CLong
 channel i = 1 .<. i
 
 foreign import ccall "portmidi.h Pm_SetChannelMask" pm_SetChannelMask :: PMStreamPtr -> CLong -> IO CInt
 setChannelMask :: PMStream -> CLong -> IO (Either PMError PMSuccess)
-setChannelMask stream mask = withForeignPtr stream (fmap toPMError . flip pm_SetChannelMask mask)
+setChannelMask stream mask = withForeignPtr stream (fmap eitherErrorOrSuccess . flip pm_SetChannelMask mask)
 
 foreign import ccall "portmidi.h Pm_Abort" pm_Abort :: PMStreamPtr -> IO CInt
 abort :: PMStream -> IO (Either PMError PMSuccess)
-abort = flip withForeignPtr (fmap toPMError . pm_Abort)
+abort = flip withForeignPtr (fmap eitherErrorOrSuccess . pm_Abort)
 
 foreign import ccall "portmidi.h Pm_Close" pm_Close :: PMStreamPtr -> IO CInt
 close :: PMStream -> IO (Either PMError PMSuccess)
-close = flip withForeignPtr (fmap toPMError . pm_Close)
+close = flip withForeignPtr (fmap eitherErrorOrSuccess . pm_Close)
 
 foreign import ccall "portmidi.h Pm_Poll" pm_Poll :: PMStreamPtr -> IO CInt
+-- | Returns wether or not a subsequent call to 'readEvents' would return
+-- some 'PMEvent's or not.
 poll :: PMStream -> IO (Either PMError PMSuccess)
-poll = flip withForeignPtr (fmap toPMError . pm_Poll)
+poll = flip withForeignPtr (fmap eitherErrorOrSuccess . pm_Poll)
 
 foreign import ccall "portmidi.h Pm_Read" pm_Read :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO CInt
-readEvents :: PMStream -> IO [PMEvent]
-readEvents = flip withForeignPtr $ \s -> allocaArray (fromIntegral defaultBufferSize) $ \arr ->
-  pm_Read s arr defaultBufferSize >>= flip peekArray arr . fromIntegral
+-- | Reads at most 256 'PMEvent's, using a dynamically allocated buffer.
+readEvents :: PMStream -> IO (Either PMError [PMEvent])
+readEvents stream =
+  allocaArray (fromIntegral defaultBufferSize) $ \arr ->
+    readEventsToBuffer stream arr defaultBufferSize >>= either
+      (return . Left)
+      (fmap Right . flip peekArray arr . fromIntegral)
  where
   defaultBufferSize = 256
+
+-- | Reads at most <size of the supplied buffer> 'PMEvent's, using
+-- the buffer passed as argument.
+readEventsToBuffer :: PMStream
+                   -> Ptr PMEvent
+                   -- ^ The 'PMEvent's buffer which will contain the results.
+                   -> CLong
+                   -- ^ The size of the 'PMEvent' buffer, in number of elements.
+                   -- No more that this number of 'PMEvent's can be read at once.
+                   -> IO (Either PMError PMEventCount)
+                   -- ^ When 'Right', returns the number of elements written
+                   -- to the 'PMEvent' buffer.
+readEventsToBuffer stream ptr sz =
+  withForeignPtr stream $ \s ->
+    eitherErrorOrCount <$> pm_Read s ptr sz
 
 foreign import ccall "portmidi.h Pm_Write" pm_Write :: PMStreamPtr -> Ptr PMEvent -> CLong -> IO CInt
 writeEvents :: PMStream -> [PMEvent] -> IO (Either PMError PMSuccess)
 writeEvents stream events = withForeignPtr stream (\s ->
-  withArrayLen events (\len arr -> toPMError <$> pm_Write s arr (fromIntegral len)))
+  withArrayLen events (\len arr -> eitherErrorOrSuccess <$> pm_Write s arr (fromIntegral len)))
 
 foreign import ccall "portmidi.h Pm_WriteShort" pm_WriteShort :: PMStreamPtr -> CULong -> CLong -> IO CInt
 writeShort :: PMStream -> PMEvent -> IO (Either PMError PMSuccess)
 writeShort stream (PMEvent msg t) = withForeignPtr stream (\s ->
-  toPMError <$> pm_WriteShort s t msg)
+  eitherErrorOrSuccess <$> pm_WriteShort s t msg)
 
 foreign import ccall "portmidi.h Pm_WriteSysEx" pm_WriteSysEx :: PMStreamPtr -> CULong -> CString -> IO CInt
 writeSysEx :: PMStream -> Timestamp -> String -> IO (Either PMError PMSuccess)
 writeSysEx stream t str = withForeignPtr stream (\st ->
-  withCAString str (\s -> toPMError <$> pm_WriteSysEx st t s))
+  withCAString str (\s -> eitherErrorOrSuccess <$> pm_WriteSysEx st t s))
 
 foreign import ccall "porttime.h Pt_Time" time :: IO Timestamp
