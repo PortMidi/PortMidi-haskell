@@ -8,14 +8,12 @@ The format of this changelog is based on
 
 ## 0.2.0.0 [not released]
 ### Changed
-- Error reporting (Breaking change)
-  * All functions now adhere to the 'Either' conventions:
-    * Real errors are returned in a 'Left',
-    * Successes are returned in a 'Right'.
-  * To achieve this, the non-errors constructors of 'PMError',
-      namely 'NoError' and 'GotData', were moved to a new type 'PMSuccess'.
-  This change will likely simplify error management at call site,
-  with a minor refactoring.
+- Error reporting (Breaking change).
+  All functions now adhere to the 'Either' conventions:
+    real errors are returned in a 'Left',
+    successes are returned in a 'Right'.
+  To achieve this, the non-errors constructors of 'PMError',
+    namely 'NoError' and 'GotData', were moved to a new type 'PMSuccess'.
 
 ### Added
 - The `poll` function was added (it binds to `Pm_Poll`) : it allows to know,
