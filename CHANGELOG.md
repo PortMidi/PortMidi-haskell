@@ -9,17 +9,17 @@ The format of this changelog is based on
 ## 0.2.0.0 [not released]
 ### Changed
 - Error reporting (Breaking change).
-  All functions now adhere to the 'Either' conventions:
-    real errors are returned in a 'Left',
-    successes are returned in a 'Right'.
-  To achieve this, the non-errors constructors of 'PMError',
-    namely 'NoError' and 'GotData', were moved to a new type 'PMSuccess'.
+  All functions now adhere to the `Either`
+  [conventions](http://hackage.haskell.org/package/base-4.11.1.0/docs/Data-Either.html):
+    real errors are returned in a `Left`,
+    successes are returned in a `Right`.
+  The non-errors constructors of `PMError`
+    (`NoError` and `GotData`) were moved to a new type `PMSuccess`.
 
 ### Added
-- The `poll` function which binds to `Pm_Poll`.
+- The `poll` function which binds to
+[`Pm_Poll`](http://portmedia.sourceforge.net/portmidi/doxygen/group__grp__io.html#g344e6ba3edb14d560ccb074d66b56590).
 - The `readEventsToBuffer` function, to read events in a user-supplied buffer.
-    This function returns a `PMEventCount`, representing the count of `PMEvent`s
-    that was read.
 - The `PMSuccess` type representing non-errors, with its associated
     functions `getText` and `getSuccessText`.
 
