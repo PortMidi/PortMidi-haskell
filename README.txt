@@ -23,12 +23,9 @@ or simply:
 
 This will install a PortMidi package that contains a Sound.PortMidi module.
 
-===================
-Contact Information
-===================
+==============================
+Bug reports / Feature requests
+==============================
 
-You may send your bug report and feature request to the package
-maintainer: Paul H. Liu <paul@thev.net>.
-
---
-Last Update: Wed Sep 28 PDT 2016
+Bug reports and feature requests can be created here:
+https://github.com/ninegua/PortMidi/issues.
