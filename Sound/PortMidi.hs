@@ -36,7 +36,7 @@ module Sound.PortMidi (
   , filterSongSelect
   , filterTune
   , filterSystemCommon
-  -- * PortMid functions
+  -- * PortMidi functions
   , initialize
   , terminate
   , hasHostError
@@ -73,11 +73,13 @@ import Foreign.C
 
 import Sound.PortMidi.DeviceInfo
 
+-- | Represents non-errors of the C enum `PmError`
 data PMSuccess
   = NoError'NoData
-  -- ^ Means no data when returned by 'poll', else means no error.
+  -- ^ Returned by 'poll' when there is no data, and returned by other functions
+  -- when there is no error.
   | GotData
-  -- ^ Returned by 'poll' only, means that data is available.
+  -- ^ Only returned by 'poll' when data is available.
   deriving (Eq, Show)
 
 instance Enum PMSuccess where
@@ -87,6 +89,7 @@ instance Enum PMSuccess where
   toEnum 1 = GotData
   toEnum x = error $ "PortMidi: PMSuccess toEnum out of bound " ++ show x
 
+-- | Represents real errors of the C enum `PmError`
 data PMError
   = HostError
   | InvalidDeviceId
@@ -184,6 +187,7 @@ encodeMsg (PMMsg s d1 d2) = ((d2 .&. 0xFF) .<. 16) .|. ((d1 .&. 0xFF) .<. 8) .|.
 decodeMsg :: CLong -> PMMsg
 decodeMsg i = PMMsg (i .&. 0xFF) ((i .>. 8) .&. 0xFF) ((i .>. 16) .&. 0xFF)
 
+-- | Time with millisecond precision.
 type Timestamp = CULong
 
 data PMEvent
@@ -301,8 +305,7 @@ readEvents stream =
  where
   defaultBufferSize = 256
 
--- | Reads at most <size of the supplied buffer> 'PMEvent's, using
--- the buffer passed as argument.
+-- | Reads 'PMEvent's and writes them to the buffer passed as argument.
 readEventsToBuffer :: PMStream
                    -> Ptr PMEvent
                    -- ^ The 'PMEvent's buffer which will contain the results.
