@@ -438,7 +438,7 @@ static PmError alsa_write(PmInternal *midi, PmEvent *buffer, long length)
 static PmError alsa_write_flush(PmInternal *midi, PmTimestamp timestamp)
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-    VERBOSE printf("snd_seq_drain_output: 0x%lx\n", (size_t) seq);
+    VERBOSE printf("snd_seq_drain_output: 0x%p\n", seq);
     desc->error = snd_seq_drain_output(seq);
     if (desc->error < 0) return pmHostError;
 
