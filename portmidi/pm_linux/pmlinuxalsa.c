@@ -32,9 +32,9 @@
 #endif
 
 /* to store client/port in the device descriptor */
-#define MAKE_DESCRIPTOR(client, port) ((void*)(((client) << 8) | (port)))
-#define GET_DESCRIPTOR_CLIENT(info) ((((int)(info)) >> 8) & 0xff)
-#define GET_DESCRIPTOR_PORT(info) (((int)(info)) & 0xff)
+#define MAKE_DESCRIPTOR(client, port) ((void*)(size_t)(((client) << 8) | (port)))
+#define GET_DESCRIPTOR_CLIENT(info) ((((size_t)(info)) >> 8) & 0xff)
+#define GET_DESCRIPTOR_PORT(info) (((size_t)(info)) & 0xff)
 
 #define BYTE unsigned char
 #define UINT unsigned long
@@ -209,7 +209,7 @@ static PmError alsa_write_byte(PmInternal *midi, unsigned char byte,
             if (when == 0) when = now;
             when = (when - now) + midi->latency;
             if (when < 0) when = 0;
-            VERBOSE printf("timestamp %d now %d latency %d, ", 
+            VERBOSE printf("timestamp %d now %d latency %ld, ", 
                            (int) timestamp, (int) now, midi->latency);
             VERBOSE printf("scheduling event after %d\n", when);
             /* message is sent in relative ticks, where 1 tick = 1 ms */
@@ -438,7 +438,7 @@ static PmError alsa_write(PmInternal *midi, PmEvent *buffer, long length)
 static PmError alsa_write_flush(PmInternal *midi, PmTimestamp timestamp)
 {
     alsa_descriptor_type desc = (alsa_descriptor_type) midi->descriptor;
-    VERBOSE printf("snd_seq_drain_output: 0x%x\n", (unsigned int) seq);
+    VERBOSE printf("snd_seq_drain_output: 0x%lx\n", (size_t) seq);
     desc->error = snd_seq_drain_output(seq);
     if (desc->error < 0) return pmHostError;
 
