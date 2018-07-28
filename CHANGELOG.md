@@ -6,7 +6,7 @@ The format of this changelog is based on
 [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
-## 0.2.0.0 [not released]
+## 0.2.0.0
 ### Changed
 - Error reporting (Breaking change).
   All functions now adhere to the `Either`
