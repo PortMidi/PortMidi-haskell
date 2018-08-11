@@ -13,11 +13,11 @@ environment:
     APPVEYOR_SAVE_CACHE_ON_ERROR: false
     STACK_ROOT: "c:\\sr"
   matrix:
-    - RESOLVER="lts-6.35"         # ghc 7.10.3
-    - RESOLVER="lts-9.21"         # ghc 8.0.2
-    - RESOLVER="lts-11.20"        # ghc 8.2.2
-    - RESOLVER="lts-12.5"         # ghc 8.4.3
-    - RESOLVER="nightly"
+    - RESOLVER: "lts-6.35"         # ghc 7.10.3
+    - RESOLVER: "lts-9.21"         # ghc 8.0.2
+    - RESOLVER: "lts-11.20"        # ghc 8.2.2
+    - RESOLVER: "lts-12.5"         # ghc 8.4.3
+    - RESOLVER: "nightly"
 
 before_test:
 # http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
