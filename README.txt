@@ -28,4 +28,4 @@ Bug reports / Feature requests
 ==============================
 
 Bug reports and feature requests can be created here:
-https://github.com/ninegua/PortMidi/issues.
+https://github.com/PortMidi/PortMidi/issues.

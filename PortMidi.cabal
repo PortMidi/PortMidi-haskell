@@ -6,7 +6,7 @@ license:       BSD3
 license-file:  LICENSE
 maintainer:    Paul H. Liu <paul@thev.net>
              , Olivier Sohn <olivier.sohn@gmail.com>
-homepage:      http://github.com/ninegua/PortMidi
+homepage:      http://github.com/PortMidi/PortMidi
 category:      Sound
 stability:     experimental
 synopsis:      A binding for PortMedia/PortMidi
@@ -64,4 +64,4 @@ Library
         extra-libraries: winmm
 source-repository head
   type:         git
-  location:     https://github.com/ninegua/PortMidi
+  location:     https://github.com/PortMidi/PortMidi
