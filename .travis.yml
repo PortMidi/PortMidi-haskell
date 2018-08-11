@@ -1,0 +1,43 @@
+# Based on https://docs.haskellstack.org/en/stable/travis_ci/
+
+sudo: false
+
+language: generic
+
+os:
+  - osx
+  - linux
+
+env:
+  - RESOLVER="lts-11.19"          # ghc 8.2.2
+  - RESOLVER="nightly-2018-06-26" # ghc 8.4.3
+  - RESOLVER="nightly"
+
+matrix:
+  allow_failures:
+    - env: RESOLVER="nightly"
+
+cache:
+  directories:
+  - $HOME/.stack
+  timeout: 1800
+
+before_install:
+
+- set -ex
+- mkdir -p ~/.local/bin
+- export PATH=$HOME/.local/bin:$PATH
+- |
+  if [ `uname` = "Darwin" ]
+  then
+    travis_retry curl --insecure -L https://www.stackage.org/stack/osx-x86_64 | tar xz --strip-components=1 --include '*/stack' -C ~/.local/bin
+  else
+    travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+  fi
+- set +ex
+
+script:
+- set -ex
+- stack --no-terminal --resolver $RESOLVER build --install-ghc --only-dependencies -j2
+- stack --no-terminal --resolver $RESOLVER test --pedantic --haddock --no-haddock-deps -j2
+- set +ex

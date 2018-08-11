@@ -1,0 +1,40 @@
+# TODO use matrix (see happy) for different resolvers
+
+# based on
+#   https://github.com/commercialhaskell/stack/blob/master/appveyor.yml
+
+# Disabled cache in hope of improving reliability of AppVeyor builds
+#cache:
+#- "c:\\sr" # stack root, short paths == fewer problems
+
+build: off
+
+environment:
+  matrix:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+        APPVEYOR_SAVE_CACHE_ON_ERROR: false
+  global:
+    STACK_ROOT: "c:\\sr"
+
+# At some point, 32-bit GHC had a bug which made the build crash hence we use the 64-bit version:
+before_build:
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" amd64
+  - cd %APPVEYOR_BUILD_FOLDER%
+
+
+build_script:
+- git submodule update --init --recursive
+
+before_test:
+# http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
+- set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
+- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
+- 7z x stack.zip stack.exe
+
+clone_folder: "c:\\stack"
+
+test_script:
+- echo "" | stack --resolver nightly-2018-06-26 --no-terminal build --pedantic --jobs 1
+- echo "" | stack --resolver nightly-2018-06-26 --no-terminal test --pedantic --jobs 1
+- echo "" | stack --resolver nightly-2018-06-26 --no-terminal haddock --pedantic --jobs 1
+
