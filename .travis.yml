@@ -8,9 +8,13 @@ os:
   - osx
   - linux
 
+# Based on "Latest (stack) LTS per GHC version" (https://www.stackage.org/)
 env:
-  - RESOLVER="lts-11.19"          # ghc 8.2.2
-  - RESOLVER="nightly-2018-06-26" # ghc 8.4.3
+  - RESOLVER="lts-0.7"          # ghc 7.8.4
+  - RESOLVER="lts-6.35"         # ghc 7.10.3
+  - RESOLVER="lts-9.21"         # ghc 8.0.2
+  - RESOLVER="lts-11.20"        # ghc 8.2.2
+  - RESOLVER="lts-12.5"         # ghc 8.4.3
   - RESOLVER="nightly"
 
 matrix:
