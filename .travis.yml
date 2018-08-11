@@ -22,6 +22,12 @@ cache:
   - $HOME/.stack
   timeout: 1800
 
+
+addons:
+  apt:
+    packages:
+    - libasound2-dev
+
 before_install:
 
 - set -ex
