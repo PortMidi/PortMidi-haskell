@@ -1,0 +1,33 @@
+# based on
+#   https://github.com/commercialhaskell/stack/blob/master/appveyor.yml
+
+# Disabled cache in hope of improving reliability of AppVeyor builds
+#cache:
+#- "c:\\sr" # stack root, short paths == fewer problems
+
+build: off
+
+environment:
+  global:
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    APPVEYOR_SAVE_CACHE_ON_ERROR: false
+    STACK_ROOT: "c:\\sr"
+  matrix:
+    - RESOLVER: "lts-6.35"         # ghc 7.10.3
+    - RESOLVER: "lts-9.21"         # ghc 8.0.2
+    - RESOLVER: "lts-11.20"        # ghc 8.2.2
+    - RESOLVER: "lts-12.5"         # ghc 8.4.3
+    - RESOLVER: "nightly"
+
+before_test:
+# http://help.appveyor.com/discussions/problems/6312-curl-command-not-found
+- set PATH=C:\Program Files\Git\mingw64\bin;%PATH%
+- curl -sS -ostack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
+- 7z x stack.zip stack.exe
+
+clone_folder: "c:\\stack"
+
+test_script:
+- echo "" | stack --resolver %RESOLVER% --no-terminal build --pedantic --jobs 1
+- echo "" | stack --resolver %RESOLVER% --no-terminal test --pedantic --jobs 1
+- echo "" | stack --resolver %RESOLVER% --no-terminal haddock --pedantic --jobs 1
