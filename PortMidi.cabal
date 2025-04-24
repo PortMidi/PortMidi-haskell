@@ -42,7 +42,6 @@ Library
   else
     if os(darwin)
      include-dirs: portmidi/pm_common portmidi/pm_mac portmidi/porttime
-     cc-options:   -msse2
      c-sources:
           portmidi/pm_common/pmutil.c
           portmidi/pm_common/portmidi.c
