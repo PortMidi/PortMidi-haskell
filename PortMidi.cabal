@@ -64,4 +64,4 @@ Library
         extra-libraries: winmm
 source-repository head
   type:         git
-  location:     https://github.com/PortMidi/PortMidi
+  location:     https://github.com/PortMidi/PortMidi-haskell
