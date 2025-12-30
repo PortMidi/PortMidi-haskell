@@ -22,4 +22,4 @@ Library
   pkgconfig-depends: PortMidi
 source-repository head
   type:         git
-  location:     https://github.com/PortMidi/PortMidi
+  location:     https://github.com/PortMidi/PortMidi-haskell
