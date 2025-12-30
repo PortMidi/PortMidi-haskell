@@ -1,6 +1,6 @@
 name:          PortMidi
 version:       0.2.0.0
-Cabal-Version: >= 1.6
+Cabal-Version: >= 1.8
 build-type:    Simple
 license:       BSD3
 license-file:  LICENSE
