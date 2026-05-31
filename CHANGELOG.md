@@ -6,6 +6,11 @@ The format of this changelog is based on
 [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 
+## 0.2.0.1
+### Changed
+- Link to the shared PortMidi library per default.
+  No user visible changes, but difference in how to build the package.
+
 ## 0.2.0.0
 ### Changed
 - Error reporting (Breaking change).
