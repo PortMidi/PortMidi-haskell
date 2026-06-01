@@ -5,7 +5,7 @@ build-type:    Simple
 license:       BSD3
 license-file:  LICENSE
 maintainer:    Paul H. Liu <paul@thev.net>
-             , Olivier Sohn <olivier.sohn@gmail.com>
+             , Henning Thielemann <haskell@henning-thielemann.de>
 homepage:      http://github.com/PortMidi/PortMidi
 category:      Sound
 stability:     experimental
