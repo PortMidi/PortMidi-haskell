@@ -29,6 +29,11 @@ Flag vendoredC
   Manual: True
   Default: False
 
+Flag pkgConfig
+  Description: Use PkgConfig (portmidi.pc) instead of Extra-Libraries
+  Manual: True
+  Default: False
+
 Library
   exposed-modules: Sound.PortMidi
   other-modules:   Sound.PortMidi.DeviceInfo
@@ -70,7 +75,10 @@ Library
             portmidi/porttime/ptwinmm.c
           extra-libraries: winmm
   else
-    extra-libraries: portmidi
+    if flag(pkgConfig)
+      pkgconfig-depends: portmidi
+    else
+      extra-libraries: portmidi
 
 source-repository head
   type:         git
