@@ -12,7 +12,7 @@ stability:     experimental
 synopsis:      A binding for PortMedia/PortMidi
 description:   A Haskell binding for PortMedia/PortMidi
 extra-source-files:
-        README.txt
+        README.md
         CHANGELOG.md
         portmidi/pm_common/portmidi.h
         portmidi/pm_common/pmutil.h
