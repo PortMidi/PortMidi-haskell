@@ -29,3 +29,11 @@ Bug reports / Feature requests
 
 Bug reports and feature requests can be created at
 [GitHub](https://github.com/PortMidi/portmidi-haskell/issues).
+
+
+Examples
+========
+
+* https://hackage.haskell.org/package/Euterpea
+* https://hackage.haskell.org/package/portmidi-utility
+* https://hackage.haskell.org/package/PortMidi-simple
