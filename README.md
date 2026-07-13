@@ -1,10 +1,12 @@
 This is a Haskell module for PortMidi audio library, which supports
 real-time MIDI input and output.
 
+
 ChangeLog
 =========
 
 Please see [CHANGELOG.md](CHANGELOG.md).
+
 
 Installation
 ============
@@ -20,6 +22,7 @@ or simply:
        cabal install
 
 This will install a PortMidi package that contains a `Sound.PortMidi` module.
+
 
 Bug reports / Feature requests
 ==============================
