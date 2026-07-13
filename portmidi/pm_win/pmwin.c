@@ -9,6 +9,7 @@
    be separate from the main portmidi.c file because it is system
    dependent, and it is separate from, say, pmwinmm.c, because it
    might need to register devices for winmm, directx, and others.
+
  */
 
 #include "stdlib.h"
@@ -16,12 +17,10 @@
 #include "pmutil.h"
 #include "pminternal.h"
 #include "pmwinmm.h"
-#ifdef USE_DLL_FOR_CLEANUP
-#include "pmdll.h" /* used to close ports on exit */
-#endif
 #ifdef DEBUG
 #include "stdio.h"
 #endif
+#include <windows.h>
 
 /* pm_exit is called when the program exits.
    It calls pm_term to make sure PortMidi is properly closed.
@@ -29,36 +28,23 @@
  */
 static void pm_exit(void) {
     pm_term();
-#ifdef DEBUG
-#define STRING_MAX 80
-    {
-        char line[STRING_MAX];
-        printf("Type ENTER...\n");
-        /* note, w/o this prompting, client console application can not see one
-           of its errors before closing. */
-        fgets(line, STRING_MAX, stdin);
-    }
-#endif
 }
 
+
+static BOOL WINAPI ctrl_c_handler(DWORD fdwCtrlType)
+{
+    exit(1);  /* invokes pm_exit() */
+    ExitProcess(1);  /* probably never called */
+    return TRUE;
+}
 
 /* pm_init is the windows-dependent initialization.*/
 void pm_init(void)
 {
-#ifdef USE_DLL_FOR_CLEANUP
-    /* we were hoping a DLL could offer more robust cleanup after errors,
-       but the DLL does not seem to run after crashes. Thus, the atexit()
-       mechanism is just as powerful, and simpler to implement.
-     */
-    pm_set_close_function(pm_exit);
-#ifdef DEBUG
-    printf("registered pm_term with cleanup DLL\n");
-#endif
-#else
     atexit(pm_exit);
+    SetConsoleCtrlHandler(ctrl_c_handler, TRUE);
 #ifdef DEBUG
     printf("registered pm_exit with atexit()\n");
-#endif
 #endif
     pm_winmm_init();
     /* initialize other APIs (DirectX?) here */
@@ -70,36 +56,33 @@ void pm_term(void) {
 }
 
 
-PmDeviceID Pm_GetDefaultInputDeviceID() {
-    /* This routine should check the environment and the registry
-       as specified in portmidi.h, but for now, it just returns
-       the first device of the proper input/output flavor.
-     */
+static PmDeviceID pm_get_default_device_id(int is_input, char *key) {
+#define PATTERN_MAX 256
+    /* Find first input or device -- this is the default. */
+    PmDeviceID id = pmNoDevice;
     int i;
     Pm_Initialize(); /* make sure descriptors exist! */
-    for (i = 0; i < pm_descriptor_index; i++) {
-        if (descriptors[i].pub.input) {
-            return i;
+    for (i = 0; i < pm_descriptor_len; i++) {
+        if (pm_descriptors[i].pub.input == is_input) {
+            id = i;
+            break;
         }
     }
-    return pmNoDevice;
+    return id;
 }
 
-PmDeviceID Pm_GetDefaultOutputDeviceID() {
-    /* This routine should check the environment and the registry
-       as specified in portmidi.h, but for now, it just returns
-       the first device of the proper input/output flavor.
-     */
-    int i;
-    Pm_Initialize(); /* make sure descriptors exist! */
-    for (i = 0; i < pm_descriptor_index; i++) {
-        if (descriptors[i].pub.output) {
-            return i;
-        }
-    }
-    return pmNoDevice;
-    return 0;
+
+PmDeviceID Pm_GetDefaultInputDeviceID(void) {
+    return pm_get_default_device_id(TRUE, 
+           "/P/M_/R/E/C/O/M/M/E/N/D/E/D_/I/N/P/U/T_/D/E/V/I/C/E");
 }
+
+
+PmDeviceID Pm_GetDefaultOutputDeviceID(void) {
+  return pm_get_default_device_id(FALSE,
+          "/P/M_/R/E/C/O/M/M/E/N/D/E/D_/O/U/T/P/U/T_/D/E/V/I/C/E");
+}
+
 
 #include "stdio.h" 
 
@@ -111,4 +94,5 @@ void *pm_alloc(size_t s) {
 void pm_free(void *ptr) { 
     free(ptr); 
 }
+
 

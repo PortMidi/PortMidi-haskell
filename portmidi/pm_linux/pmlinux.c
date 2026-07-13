@@ -12,6 +12,9 @@
 
 #include "stdlib.h"
 #include "portmidi.h"
+#include "pmutil.h"
+#include "pminternal.h"
+
 #ifdef PMALSA
   #include "pmlinuxalsa.h"
 #endif
@@ -20,20 +23,23 @@
   #include "pmlinuxnull.h"
 #endif
 
-PmError pm_init()
+#if !(defined(PMALSA) || defined(PMNULL))
+#error One of PMALSA or PMNULL must be defined
+#endif
+
+void pm_init(void)
 {
     /* Note: it is not an error for PMALSA to fail to initialize. 
      * It may be a design error that the client cannot query what subsystems
      * are working properly other than by looking at the list of available
      * devices.
      */
-    #ifdef PMALSA
-	pm_linuxalsa_init();
-    #endif
-    #ifdef PMNULL
+#ifdef PMALSA
+    pm_linuxalsa_init();
+#endif
+#ifdef PMNULL
         pm_linuxnull_init();
-    #endif
-    return pmNoError;
+#endif
 }
 
 void pm_term(void)
@@ -41,16 +47,18 @@ void pm_term(void)
     #ifdef PMALSA
         pm_linuxalsa_term();
     #endif
+    #ifdef PMNULL
+        pm_linuxnull_term();
+    #endif
 }
 
-PmDeviceID pm_default_input_device_id = -1;
-PmDeviceID pm_default_output_device_id = -1;
-
-PmDeviceID Pm_GetDefaultInputDeviceID() { 
+PmDeviceID Pm_GetDefaultInputDeviceID(void) { 
+    Pm_Initialize();
     return pm_default_input_device_id; 
 }
 
-PmDeviceID Pm_GetDefaultOutputDeviceID() { 
+PmDeviceID Pm_GetDefaultOutputDeviceID(void) { 
+    Pm_Initialize();
     return pm_default_output_device_id; 
 }
 

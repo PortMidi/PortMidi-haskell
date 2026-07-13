@@ -17,9 +17,8 @@ extra-source-files:
         portmidi/pm_common/portmidi.h
         portmidi/pm_common/pmutil.h
         portmidi/pm_common/pminternal.h
-        portmidi/pm_linux/pmlinux.h
         portmidi/pm_linux/pmlinuxalsa.h
-        portmidi/pm_mac/pmmac.h
+        portmidi/pm_linux/pmlinuxnull.h
         portmidi/pm_mac/pmmacosxcm.h
         portmidi/pm_win/pmwinmm.h
         portmidi/porttime/porttime.h
@@ -48,6 +47,7 @@ Library
           portmidi/pm_common/portmidi.c
           portmidi/pm_linux/pmlinux.c
           portmidi/pm_linux/pmlinuxalsa.c
+          portmidi/pm_linux/pmlinuxnull.c
           portmidi/porttime/porttime.c
           portmidi/porttime/ptlinux.c
       extra-libraries: asound
@@ -61,6 +61,7 @@ Library
           portmidi/pm_mac/pmmac.c
           portmidi/pm_mac/pmmacosxcm.c
           portmidi/porttime/porttime.c
+          portmidi/porttime/ptmacosx_cf.c
           portmidi/porttime/ptmacosx_mach.c
         frameworks: CoreMIDI CoreFoundation CoreAudio
       else
