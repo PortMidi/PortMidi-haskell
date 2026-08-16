@@ -86,3 +86,8 @@ Library
 source-repository head
   type:         git
   location:     https://github.com/PortMidi/PortMidi-haskell
+
+source-repository this
+  tag:          0.2.0.1
+  type:         git
+  location:     https://github.com/PortMidi/PortMidi-haskell
