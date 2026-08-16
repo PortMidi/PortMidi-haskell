@@ -1,8 +1,8 @@
+Cabal-Version: 2.2
 name:          PortMidi
 version:       0.2.0.1
-Cabal-Version: >= 1.8
 build-type:    Simple
-license:       BSD3
+license:       BSD-3-Clause
 license-file:  LICENSE
 maintainer:    Paul H. Liu <paul@thev.net>
              , Henning Thielemann <haskell@henning-thielemann.de>
@@ -11,9 +11,10 @@ category:      Sound
 stability:     experimental
 synopsis:      A binding for PortMedia/PortMidi
 description:   A Haskell binding for PortMedia/PortMidi
-extra-source-files:
+extra-doc-files:
         README.md
         CHANGELOG.md
+extra-source-files:
         portmidi/pm_common/portmidi.h
         portmidi/pm_common/pmutil.h
         portmidi/pm_common/pminternal.h
@@ -37,7 +38,8 @@ Library
   exposed-modules: Sound.PortMidi
   other-modules:   Sound.PortMidi.DeviceInfo
   build-depends:   base >= 4.8 && < 5
-  extensions:      CPP, ForeignFunctionInterface
+  default-language:    Haskell98
+  default-extensions:  CPP, ForeignFunctionInterface
   if flag(vendoredC)
     if os(linux) || os(freebsd)
       include-dirs: portmidi/pm_common portmidi/pm_linux portmidi/porttime
